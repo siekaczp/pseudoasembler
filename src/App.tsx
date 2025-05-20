@@ -1,21 +1,24 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ChangeEvent } from "react";
 import { highlightText } from "./parsing.ts";
 import { useSimulator } from "./SimulatorContext.tsx";
 import Display from "./Display.tsx";
 import type { Instruction, FormatType } from "./types.ts";
+import { Modal } from "./Modal.tsx";
 
 function App() {
   const [text, setText] = useState<string>("");
   const [highlightedHtml, setHighlightedHtml] = useState<string>("");
   const [validated, setValidated] = useState<boolean>(true);
   const [programCode, setProgramCode] = useState<Instruction[]>([]);
-  const [format, setFormat] = useState<FormatType>("dec");
+  const [format, setFormat] = useState<FormatType>("hex");
   const [running, setRunning] = useState<boolean>(false);
+  const [isModalActive, setIsModalActive] = useState<boolean>(false);
   const { simulationState, run, clear, stepByStep, nextStep } = useSimulator();
 
   const highlightedRef = useRef<HTMLPreElement>(null);
 
   useEffect(() => {
+    console.log("Xd");
     const { highlighted, correct, program } = highlightText(text);
     setHighlightedHtml(highlighted);
     setValidated(correct);
@@ -31,7 +34,7 @@ function App() {
 
   const highlightLine = (i: number | null) => {
     const withoutSelection = highlightedHtml.replace(
-      /<b class="current-line">(.*)<\/b>/,
+      /<b class="current-line">(.*)<\/b>/g,
       "$1"
     );
     const lines = withoutSelection.split("\n");
@@ -60,6 +63,32 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [simulationState]);
 
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result;
+      if (typeof result === "string") {
+        setText(result.replace(/\r\n/g, "\n"));
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleSaveFile = () => {
+    const blob = new Blob([text], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "output.txt";
+    a.click();
+
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="container is-fluid main-container">
       <nav className="level">
@@ -70,53 +99,81 @@ function App() {
         </div>
       </nav>
 
-      <div className="columns columns-wrapper">
+      <div className="columns columns-wrapper is-desktop">
         <div className="column editor-column">
-          <div className="box buttons">
-            <button
-              className="button is-light"
-              onClick={() => {
-                run(programCode);
-              }}
-              disabled={!validated || running}
-            >
-              Start
-            </button>
-            <button
-              className="button is-light"
-              onClick={() => {
-                setRunning(false);
-                clear();
-                highlightLine(null);
-              }}
-            >
-              Reset
-            </button>
-            <div className="select">
-              <select
-                id="formatSelect"
-                value={format}
-                onChange={(e) => setFormat(e.target.value as FormatType)}
+          <div className="box">
+            <div className="buttons">
+              <button
+                onClick={() => {
+                  document.getElementById("hidden-file-input")?.click();
+                }}
+                className="button is-light"
               >
-                <option value="dec">Dziesiętny</option>
-                <option value="bin">Binarny</option>
-                <option value="hex">Szesnastkowy</option>
-              </select>
+                Otwórz
+              </button>
+              <input
+                type="file"
+                id="hidden-file-input"
+                accept=".txt"
+                style={{ display: "none" }}
+                onChange={handleFileChange}
+              />
+              <button onClick={handleSaveFile} className="button is-light">
+                Zapisz
+              </button>
+              <div className="select">
+                <select
+                  id="formatSelect"
+                  value={format}
+                  onChange={(e) => setFormat(e.target.value as FormatType)}
+                >
+                  <option value="hex">Szesnastkowy</option>
+                  <option value="dec">Dziesiętny</option>
+                  <option value="bin">Binarny</option>
+                </select>
+              </div>
+              <button
+                className="button is-light"
+                onClick={() => setIsModalActive(true)}
+              >
+                Rozkazy
+              </button>
             </div>
-            <button
-              className="button is-light"
-              onClick={() => {
-                if (running) {
-                  nextStep();
-                } else {
-                  setRunning(true);
-                  stepByStep(programCode);
-                }
-              }}
-              disabled={!validated}
-            >
-              {running ? "Do przodu" : "Krok po kroku"}
-            </button>
+            <div className="buttons">
+              <button
+                className="button is-primary"
+                onClick={() => {
+                  run(programCode);
+                }}
+                disabled={!validated || running}
+              >
+                Start
+              </button>
+              <button
+                className="button is-light"
+                onClick={() => {
+                  setRunning(false);
+                  clear();
+                  highlightLine(null);
+                }}
+              >
+                Reset
+              </button>
+              <button
+                className="button is-light"
+                onClick={() => {
+                  if (running) {
+                    nextStep();
+                  } else {
+                    setRunning(true);
+                    stepByStep(programCode);
+                  }
+                }}
+                disabled={!validated}
+              >
+                {running ? "Do przodu" : "Krok po kroku"}
+              </button>
+            </div>
           </div>
           <div className="editor-wrapper">
             <textarea
@@ -146,7 +203,7 @@ function App() {
           </div>
         </div>
 
-        <div className="column is-one-quarter">
+        <div className="column is-one-quarter-desktop">
           <Display
             data={simulationState.registers.map((x: number, i: number) => [
               String(i),
@@ -157,7 +214,7 @@ function App() {
             format={format}
           />
         </div>
-        <div className="column is-one-quarter">
+        <div className="column is-one-quarter-desktop">
           <Display
             data={Object.entries(simulationState.memory).map(([k, v]) => [
               findLabel(parseInt(k)),
@@ -168,6 +225,8 @@ function App() {
             format={format}
           />
         </div>
+
+        <Modal active={isModalActive} close={() => setIsModalActive(false)} />
       </div>
     </div>
   );

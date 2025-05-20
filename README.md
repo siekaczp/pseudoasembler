@@ -7,8 +7,6 @@
 
 ## To do
 
-- cheat sheet
-- saving and opening files
 - automatic scrolling after pasting
 - displaying arithmetic flag
 - testing division and 32bit operations
