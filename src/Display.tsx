@@ -1,11 +1,6 @@
 import type { DisplayProps } from "./types";
 
-export default function Display({
-  title,
-  firstColumn,
-  data,
-  format,
-}: DisplayProps) {
+export default function Display({ firstColumn, data, format }: DisplayProps) {
   const formatValue = (value: number): string => {
     switch (format) {
       case "bin": {
@@ -32,24 +27,21 @@ export default function Display({
   };
 
   return (
-    <div className="box state-display">
-      <h2 className="subtitle">{title}</h2>
-      <table className="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
-        <thead>
-          <tr>
-            <th className="has-text-left">{firstColumn}</th>
-            <th className="has-text-left">Wartość</th>
+    <table className="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
+      <thead>
+        <tr>
+          <th className="has-text-left">{firstColumn}</th>
+          <th className="has-text-left">Wartość</th>
+        </tr>
+      </thead>
+      <tbody className={format !== "dec" ? "is-family-monospace" : ""}>
+        {data.map(([k, v], id) => (
+          <tr key={id}>
+            <td className="has-text-left">{k}</td>
+            <td className="has-text-left">{formatValue(v)}</td>
           </tr>
-        </thead>
-        <tbody className={format !== "dec" ? "is-family-monospace" : ""}>
-          {data.map(([k, v], id) => (
-            <tr key={id}>
-              <td className="has-text-left">{k}</td>
-              <td className="has-text-left">{formatValue(v)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        ))}
+      </tbody>
+    </table>
   );
 }

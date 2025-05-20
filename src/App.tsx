@@ -12,17 +12,20 @@ function App() {
   const [programCode, setProgramCode] = useState<Instruction[]>([]);
   const [format, setFormat] = useState<FormatType>("hex");
   const [running, setRunning] = useState<boolean>(false);
+  const [doneRunning, setDoneRunning] = useState<boolean>(false);
   const [isModalActive, setIsModalActive] = useState<boolean>(false);
   const { simulationState, run, clear, stepByStep, nextStep } = useSimulator();
 
   const highlightedRef = useRef<HTMLPreElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
-    console.log("Xd");
     const { highlighted, correct, program } = highlightText(text);
     setHighlightedHtml(highlighted);
     setValidated(correct);
     setProgramCode(program);
+    setDoneRunning(false);
+    setRunning(false);
   }, [text]);
 
   const findLabel = (x: number) => {
@@ -56,6 +59,7 @@ function App() {
       if (simulationState.done) {
         highlightLine(null);
         setRunning(false);
+        setDoneRunning(true);
       } else {
         highlightLine(simulationState.ip);
       }
@@ -143,6 +147,7 @@ function App() {
               <button
                 className="button is-primary"
                 onClick={() => {
+                  setDoneRunning(false);
                   run(programCode);
                 }}
                 disabled={!validated || running}
@@ -155,6 +160,7 @@ function App() {
                   setRunning(false);
                   clear();
                   highlightLine(null);
+                  setDoneRunning(false);
                 }}
               >
                 Reset
@@ -165,11 +171,12 @@ function App() {
                   if (running) {
                     nextStep();
                   } else {
+                    setDoneRunning(false);
                     setRunning(true);
                     stepByStep(programCode);
                   }
                 }}
-                disabled={!validated}
+                disabled={!validated || doneRunning}
               >
                 {running ? "Do przodu" : "Krok po kroku"}
               </button>
@@ -193,6 +200,15 @@ function App() {
                 }
               }}
               readOnly={running}
+              onPaste={() => {
+                setTimeout(() => {
+                  const el = textareaRef.current;
+                  if (el) {
+                    el.scrollTop = el.scrollHeight;
+                  }
+                });
+              }}
+              ref={textareaRef}
             />
             <pre
               className="highlight"
@@ -204,26 +220,59 @@ function App() {
         </div>
 
         <div className="column is-one-quarter-desktop">
-          <Display
-            data={simulationState.registers.map((x: number, i: number) => [
-              String(i),
-              x,
-            ])}
-            firstColumn="Rejestr"
-            title="Rejestry"
-            format={format}
-          />
+          <div className="box state-display">
+            {running || doneRunning ? (
+              <>
+                <h2 className="subtitle">Flagi</h2>
+                <table className="table is-bordered is-narrow is-fullwidth">
+                  <tbody>
+                    <tr>
+                      <td className="has-text-left">Flaga znaku</td>
+                      <td className="has-text-left">
+                        {simulationState.flag !== null &&
+                        simulationState.flag < 0
+                          ? 1
+                          : 0}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="has-text-left">Flaga zera</td>
+                      <td className="has-text-left">
+                        {simulationState.flag !== null &&
+                        simulationState.flag === 0
+                          ? 1
+                          : 0}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </>
+            ) : (
+              <></>
+            )}
+            <h2 className="subtitle">Rejestry</h2>
+            <Display
+              data={simulationState.registers.map((x: number, i: number) => [
+                String(i),
+                x,
+              ])}
+              firstColumn="Rejestr"
+              format={format}
+            />
+          </div>
         </div>
         <div className="column is-one-quarter-desktop">
-          <Display
-            data={Object.entries(simulationState.memory).map(([k, v]) => [
-              findLabel(parseInt(k)),
-              v,
-            ])}
-            firstColumn="Pamięć"
-            title="Adres"
-            format={format}
-          />
+          <div className="box state-display">
+            <h2 className="subtitle">Pamięć</h2>
+            <Display
+              data={Object.entries(simulationState.memory).map(([k, v]) => [
+                findLabel(parseInt(k)),
+                v,
+              ])}
+              firstColumn="Pamięć"
+              format={format}
+            />
+          </div>
         </div>
 
         <Modal active={isModalActive} close={() => setIsModalActive(false)} />

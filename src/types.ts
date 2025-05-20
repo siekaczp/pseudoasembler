@@ -44,7 +44,6 @@ export type State = {
 export type FormatType = "dec" | "hex" | "bin";
 
 export type DisplayProps = {
-  title: string;
   firstColumn: string;
   data: [string, number][];
   format: FormatType;

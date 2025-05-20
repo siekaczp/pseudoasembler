@@ -7,9 +7,7 @@
 
 ## To do
 
-- automatic scrolling after pasting
-- displaying arithmetic flag
-- testing division and 32bit operations
+- overflow detection
 - uninitialized registers and memory
 
 ## Resources
