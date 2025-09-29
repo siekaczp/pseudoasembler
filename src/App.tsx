@@ -125,6 +125,12 @@ function App() {
               <button onClick={handleSaveFile} className="button is-light">
                 Zapisz
               </button>
+              <button
+                className="button is-light"
+                onClick={() => setIsModalActive(true)}
+              >
+                Rozkazy
+              </button>
               <div className="select">
                 <select
                   id="formatSelect"
@@ -136,12 +142,6 @@ function App() {
                   <option value="bin">Binarny</option>
                 </select>
               </div>
-              <button
-                className="button is-light"
-                onClick={() => setIsModalActive(true)}
-              >
-                Rozkazy
-              </button>
             </div>
             <div className="buttons">
               <button
