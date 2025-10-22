@@ -2,6 +2,8 @@
 
 Quick-and-dirty, **unofficial** implementation of pseudo-assembler emulator, in early stage of development. The implementation may be incorrect and have bugs. Use at your own risk.
 
+The application is available at https://siekaczp.github.io/pseudoasembler/
+
 ## Available Scripts
 
 - `npm run dev` Runs the app in the development mode.
