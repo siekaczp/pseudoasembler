@@ -223,25 +223,13 @@ function App() {
           <div className="box state-display">
             {running || doneRunning ? (
               <>
-                <h2 className="subtitle">Flagi</h2>
+                <h2 className="subtitle">Rejestr stanu programu</h2>
                 <table className="table is-bordered is-narrow is-fullwidth">
                   <tbody>
                     <tr>
                       <td className="has-text-left">Flaga znaku</td>
                       <td className="has-text-left">
-                        {simulationState.flag !== null &&
-                        simulationState.flag < 0
-                          ? 1
-                          : 0}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="has-text-left">Flaga zera</td>
-                      <td className="has-text-left">
-                        {simulationState.flag !== null &&
-                        simulationState.flag === 0
-                          ? 1
-                          : 0}
+                          {simulationState.flag !== null ? Math.sign(simulationState.flag) : 0}
                       </td>
                     </tr>
                   </tbody>
@@ -263,7 +251,7 @@ function App() {
         </div>
         <div className="column is-one-quarter-desktop">
           <div className="box state-display">
-            <h2 className="subtitle">Pamięć</h2>
+            <h2 className="subtitle">Pamięć operacyjna</h2>
             <Display
               data={Object.entries(simulationState.memory).map(([k, v]) => [
                 findLabel(parseInt(k)),

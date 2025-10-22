@@ -115,6 +115,12 @@ export function Modal({
           <p className="modal-card-title">Rozkazy pseudoasemblera</p>
         </header>
         <section className="modal-card-body">
+          <article className="message is-warning">
+            <div className="message-body">
+              Uwaga! Jest to <b>nieoficjalna</b>, wczesna wersja emulatora pseudoasemblera. Nie ma gwarancji w pełni poprawnego działania, zwłaszcza w nietypowych przypadkach oraz gdy kod nie jest w pełni poprawny.
+              Poniższa lista rozkazów oraz ich implementacja w tym emulatorze <b>nie jest</b> autorytatywna.
+            </div>
+          </article>
           <table className="table is-striped is-hoverable is-fullwidth">
             <tbody>
               {data.map((item, idx) => (
